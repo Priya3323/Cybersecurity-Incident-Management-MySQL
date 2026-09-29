@@ -1,0 +1,171 @@
+-- =====================================================
+-- CYBERSECURITY INCIDENT MANAGEMENT AND RISK ANALYSIS
+-- USING MYSQL
+-- =====================================================
+
+-- Project Name:
+-- Cybersecurity Incident Management and Risk Analysis Using MySQL
+
+-- Prepared By:
+-- [Priyanka Kumari]
+
+-- Course:
+-- [Masters in Data Science and Data Analytics with AI]
+
+-- =====================================================
+-- SECTION 1: DATABASE & DATA EXPLORATION
+-- =====================================================
+# Q1 How many records are present in the users table?
+select count(*) from users;
+
+# Q2 How many records are present in the security_incidents table?
+select count(*) from security_incidents;
+
+# Q3 Display all columns and the first 10 records from the security_incidents table.
+select*from security_incidents limit 10;
+
+#Q4 Display the structure of the network_events table, including its column names and data types.
+desc network_events;
+
+# Q5 Find the total number of records in each of the 7 tables in the cybersecurity database.
+select 'organizations' as table_name, count(*) as total_records from organizations
+union all
+select 'users' as table_name, count(*) as total_records from users
+union all
+select 'security_incidents' as table_name, count(*) as total_records from security_incidents
+union all
+select 'network_events' as table_name, count(*) as total_records from network_events
+union all
+select 'login_logs' as table_name, count(*) as total_records from login_logs
+union all
+select 'incident_systems' as table_name, count(*) as total_records from incident_systems
+union all
+select 'systems' as table_name, count(*) as total_records from systems;
+
+
+-- =====================================================
+-- SECTION 2: DATA QUALITY CHECKS
+-- =====================================================
+
+# Q6. Find the total number of users in each organization.
+select*from users;
+select*from organizations;
+select org_id, count(user_id) as total_users from users group by org_id;
+
+#Q7.Find the number of security incidents for each organization.
+select org_id, count(incident_id) as total_security_incidents from security_incidents group by org_id;
+
+#Q8.Find the number of security incidents for each severity level.
+select severity, count(incident_id) as total_incidents from security_incidents group by severity;
+
+#Q9. Find the number of security incidents discovered in each year.
+select year(discovered_date) as Year_Number, count(incident_id) as total_incidents from security_incidents
+group by Year_Number;
+
+#Q10. Find the top 5 organizations with the highest number of security incidents.
+select org_id, count(incident_id) as total_incidents from security_incidents group by org_id order by total_incidents desc limit 5;
+
+#Q11 Find the number of network events for each event type.
+select event_type, count(event_id) as Total_network_events from network_events group by event_type;
+
+#Q12 Find the number of login attempts for each login status (successful/failed).
+select status, count(login_id) as login_attempts from login_logs group by status;
+
+# Q13 Find the number of failed login attempts for each user.
+select user_id, count(status) as failed_login_attempts from login_logs where status = 'Failed' group by user_id;
+
+# Q14 Find the organizations that have more than 10 security incidents.
+select org_id, count(incident_id) as total_incidents from security_incidents group by org_id having total_incidents >10;
+
+#Q15. Find the earliest and latest security incident date in the database.
+select min(discovered_date) as earliest_incident_date, max(discovered_date) as latest_incident_date from security_incidents;
+
+-- =====================================================
+-- SECTION 3: SECURITY INCIDENT ANALYSIS
+-- =====================================================
+
+#Q16. Display each user's user_id, role, and the industry of their organization.
+select user_id, role, industry from users u
+left join organizations o on u.org_id=o.org_id;
+
+#Q17. Display each security incident along with the industry of the organization where it occurred.
+select s.incident_id, s.incident_type, o.industry from security_incidents s
+left join organizations o on s.org_id = o.org_id;
+
+
+#Q18: Display each user along with the security incident type associated with their organization.
+select u.user_id, u.org_id, s.incident_type from users u left join
+security_incidents s on s.org_id = u.org_id;
+
+#Q19. Display each network event along with the industry of the organization associated with that event.
+select n.event_id, n.event_type, o.org_id, o.industry from network_events n
+left join systems s on n.system_id = s.system_id
+left join organizations o on o.org_id = s.org_id;
+
+#Q20. Display each login record along with the user's role.
+select l.login_id, l.status, u.role from login_logs l
+left join users u on l.user_id = u.user_id;
+
+#Q21. Display each security incident along with the systems involved in that incident.
+select v.incident_id, v.incident_type, s.system_id, s.os_type from security_incidents v
+left join incident_systems I on v.incident_id = I.incident_id
+left join systems s on s.system_id =I.system_id;
+
+#Q22. Display each system along with the organization that owns it.
+
+select system_id, o.org_id, os_type from systems s left join organizations o on s.org_id = o.org_id;
+
+
+#Q23. Find the total number of security incidents for each organization and display the organization ID along with the total incident count.
+
+select o.org_id, count(incident_id) as Total_security_Incidents from organizations o join
+security_incidents s on o.org_id = s.org_id group by o.org_id order by Total_security_Incidents desc; 
+
+#Q24. Find the total number of failed login attempts for each organization.
+select o.org_id, o.industry, count(l.status) as total_failed_counts from organizations o
+join users u using(org_id) join login_logs l using(user_id) where l.status = "Failed" group by o.org_id, o.industry;
+
+
+-- =====================================================
+-- SECTION 4: INCIDENT SEVERITY / CRITICALITY ANALYSIS
+-- =====================================================
+
+
+-- =====================================================
+-- SECTION 5: SYSTEM ANALYSIS
+-- =====================================================
+
+
+-- =====================================================
+-- SECTION 6: INCIDENT-SYSTEM ANALYSIS
+-- =====================================================
+
+
+-- =====================================================
+-- SECTION 7: NETWORK EVENT ANALYSIS
+-- =====================================================
+
+
+-- =====================================================
+-- SECTION 8: LOGIN LOG ANALYSIS
+-- =====================================================
+
+
+-- =====================================================
+-- SECTION 9: USER & ORGANIZATION ANALYSIS
+-- =====================================================
+
+
+-- =====================================================
+-- SECTION 10: MULTI-TABLE ANALYSIS
+-- =====================================================
+
+
+-- =====================================================
+-- SECTION 11: ADVANCED SQL ANALYSIS
+-- =====================================================
+
+
+-- =====================================================
+-- SECTION 12: FINAL PROJECT INSIGHTS
+-- =====================================================
