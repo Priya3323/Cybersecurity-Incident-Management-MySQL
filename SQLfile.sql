@@ -404,4 +404,128 @@ select severity, count(incident_id)/(select count(incident_id) from security_inc
 security_incidents where severity = 'Critical';
 
 #Q34. Find the most common incident type among Critical-severity incidents.
-select 
+select incident_type, count(incident_id) as total_number, severity from security_incidents where severity = "Critical" group by 
+incident_type order by total_number desc limit 1;
+
+#Q35. Find the percentage of Critical incidents for each incident type.
+select incident_type, count(incident_id)/(select count(incident_id) from security_incidents where severity = 'Critical')*100 as Critical_incidents_percentage
+from security_incidents where severity = "Critical" group by incident_type;
+
+#Q36: Find the total number of systems owned by each organization.
+select*from systems;
+select org_id, count(system_id) as total_systems from systems group by org_id;
+
+#Q37. Find the number of systems for each operating system type (os_type).
+select os_type, count(system_id) as total_systems from systems group by os_type;
+
+# Q38. Find the operating system type with the highest number of systems.
+with system_table as (select os_type, count(system_id) as system_count from systems group by os_type)
+select os_type, system_count from system_table order by system_count desc limit 1;
+
+# Q39. Find the organizations that have more than 10 systems.
+with System_new as (select org_id, count(system_id) as system_count from systems group by org_id)
+select org_id, system_count from System_new where system_count > 10;
+
+# Q40. Find the average number of systems owned by each organization.
+with system_new as (select org_id, count(system_id) as average_systems from systems group by org_id)
+select avg(average_systems) as Average_count from system_new;
+
+# Q41. Find the total number of systems involved in each security incident.
+select*from incident_systems;
+select*from security_incidents;
+select s.incident_id, count(I.system_id) as system_count from security_incidents s join
+incident_systems I using(incident_id) group by s.incident_id;
+
+# Q42. Find the total number of security incidents associated with each system.
+select I.system_id, count(s.incident_id) as incidents_count from incident_systems I join
+security_incidents s using(incident_id) group by I.system_id;
+
+# Q43. Find the number of systems involved in Critical-severity incidents.
+select count(I.system_id) as Number_of_system from security_incidents s join
+incident_systems I using(incident_id) where s.severity = "Critical";
+
+# Q44. Find the organizations that have security incidents involving more than 5 systems.
+select s.org_id, count(i.system_id) as system_count from security_incidents s join incident_systems i using(incident_id) group by 
+s.org_id having system_count > 5;
+
+# Q45. Find the system associated with the highest number of security incidents.
+select i.system_id, count(s.incident_id) as Incident_count from incident_systems i join 
+security_incidents s using(incident_id) group by i.system_id order by Incident_count desc limit 1;
+
+# Q46. Find the number of network events for each system.
+select*from network_events;
+select*from systems;
+select system_id, count(event_id) as Event_count from network_events group by system_id;
+
+# Q47. Find the number of network events for each organization.
+select s.org_id, count(e.event_id) as Event_count from systems s join network_events e using(system_id) group by s.org_id;
+
+# Q48. Find the number of network events for each event type and organization.
+select s.org_id, n.event_type, count(n.event_id) as Event_count from network_events n join
+systems s using (system_id) group by s.org_id, n.event_type;
+
+# Q49. Find the system that has the highest number of network events.
+select system_id, count(event_id) as Event_count from network_events group by system_id 
+order by Event_count desc limit 1;
+
+# Q50. Find the organizations that have more network events than the average number of network events per organization.
+with average_count as (select s.org_id, count(n.event_id) as event_count from network_events n join systems s using(system_id) 
+group by s.org_id)
+select org_id, event_count from average_count where event_count > (select avg(event_count) from average_count);
+
+# Q51. Find the total number of login attempts for each user.
+select*from login_logs;
+select user_id, count(login_id) as Attempts from login_logs group by user_id;
+
+# Q52. Find the number of successful login attempts for each user.
+select user_id, count(login_id) as login_attempts from login_logs where status = "Success" group by user_id;
+
+# Q53. Find the number of failed login attempts for each organization.
+select u.org_id, count(l.login_id) as login_attempts from login_logs l join 
+users u using(user_id)
+ where status = "Failed" group by u.org_id;
+select*from login_logs;
+
+# Q54. Find the users who have more failed login attempts than successful login attempts.
+select user_id, 
+count(case when status = "Failed" then login_id end) as Failed_count,
+count(case when status = "Success" then login_id end) as Success_count
+from login_logs group by user_id having Failed_count > Success_count;
+
+# Q55. Find the organization with the highest number of failed login attempts.
+select u.org_id, count(l.status) as attempt_count from login_logs l join users u using(user_id) where status = 'Failed' 
+group by u.org_id order by attempt_count desc limit 1;
+
+# Q56. Find the total number of users for each role.
+select*from users;
+select role, count(user_id) as users_COUNT from users group by role;
+
+# Q57. Find the number of users for each role in each organization.
+select org_id, role, count(*) as user_count from users group by org_id, role;
+
+# Q58. Find the organization having the highest number of users.
+select org_id, count(*) as users_count from users group by org_id order by users_count desc limit 1;
+
+# Q59. Find the role with the highest number of users in each organization.
+select role, org_id, count(user_id) as count_user from users group by role, org_id order by count_user desc limit 1;
+
+# Q60. Find organizations that have more users than the average number of users per organization.
+
+
+# Q61. Find the total number of systems, users, and security incidents for each organization.
+# Q62. Find the total number of successful and failed login attempts for each organization.
+# Q63. Find the total number of network events and security incidents for each organization.
+# Q64. Find organizations that have both Critical security incidents and failed login attempts.
+# Q65. Find the organization with the highest number of security incidents and display its industry.
+
+# Q66. Find organizations whose number of security incidents is greater than the average number of incidents across all organizations.
+# Q67. Find the users who have made more login attempts than the average number of login attempts per user.
+# Q68. Rank organizations based on their total number of security incidents using a window function.
+# Q69. Rank incident types based on their total number of incidents using a window function.
+# Q70. Find the percentage contribution of each organization's security incidents to the total security incidents using a window function.
+
+# Q71. Find the organization with the highest number of Critical incidents and display its industry.
+# Q72. Find the most common security incident type in the database.
+# Q73. Find the operating system type associated with the highest number of systems.
+# Q74. Find the organization with the highest number of network events and display its industry.
+# Q75. Find the organization with the highest number of failed login attempts and display its industry.
