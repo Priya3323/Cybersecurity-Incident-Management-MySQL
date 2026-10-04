@@ -507,25 +507,88 @@ select org_id, role, count(*) as user_count from users group by org_id, role;
 select org_id, count(*) as users_count from users group by org_id order by users_count desc limit 1;
 
 # Q59. Find the role with the highest number of users in each organization.
-select role, org_id, count(user_id) as count_user from users group by role, org_id order by count_user desc limit 1;
+with Cte as (select role, org_id, count(user_id) as Users_count, row_number() over( partition by org_id order by count(user_id) desc ) as 
+ranking from users group by role, org_id) select org_id, role, users_count from Cte where ranking = 1;
 
 # Q60. Find organizations that have more users than the average number of users per organization.
-
+with Ranking as (select org_id, count(user_id) as user_count from users group by org_id)
+select org_id, user_count from Ranking where user_count > (select avg(user_count) from Ranking);
 
 # Q61. Find the total number of systems, users, and security incidents for each organization.
+
+with system_count as (select org_id, count(system_id) as system_count from systems group by org_id),
+ user_count as (select org_id, count(user_id) as user_count from users group by org_id),
+ incidents_count as (select org_id, count(incident_id) as incidents_count from security_incidents group by org_id)
+ select org_id, system_count, user_count, incidents_count from system_count join user_count using(org_id) 
+ join incidents_count using(org_id);
+
 # Q62. Find the total number of successful and failed login attempts for each organization.
+select u.org_id, count(case when status = "Success" then login_id end) as successful_logins,
+count(case when status = "Failed" then login_id end) as failed_logins from users u join 
+login_logs l using(user_id) group by u.org_id;
+
 # Q63. Find the total number of network events and security incidents for each organization.
+
+with network_event_count as (select s.org_id, count(n.event_id) as network_event_count from systems s join network_events n using(system_id)
+group by s.org_id),
+security_incident_count as (select org_id, count(incident_id) as security_incident_count from security_incidents group by org_id)
+select org_id, network_event_count, security_incident_count from network_event_count join 
+security_incident_count using(org_id);
+
+
 # Q64. Find organizations that have both Critical security incidents and failed login attempts.
+with critical_count_incident as (select org_id, count(incident_id) as critical_count_incident from security_incidents where severity = 'Critical' 
+group by org_id), failed_login_attempts AS (
+    SELECT u.org_id, COUNT(l.login_id) AS failed_login_attempts
+    FROM login_logs l
+    JOIN users u USING(user_id)
+    WHERE l.status = 'Failed'
+    GROUP BY u.org_id) select org_id, critical_count_incident, failed_login_attempts from critical_count_incident 
+join failed_login_attempts
+using(org_id);
+
 # Q65. Find the organization with the highest number of security incidents and display its industry.
+select o.org_id, o.industry, count(s.incident_id) as Highest_count from organizations o join 
+security_incidents s using(org_id) group by o.org_id, o.industry order by Highest_count desc limit 1;
 
 # Q66. Find organizations whose number of security incidents is greater than the average number of incidents across all organizations.
+with ranking as (select org_id, count(incident_id) as incident_count from security_incidents group by org_id) 
+select org_id, incident_count from ranking where incident_count >
+(select avg(incident_count) from ranking);
+
 # Q67. Find the users who have made more login attempts than the average number of login attempts per user.
+with login_attempts as (select user_id, count(login_id) as login_attempts from login_logs group by user_id)
+select user_id, login_attempts from login_attempts where login_attempts > (select avg(login_attempts) from login_attempts);
+
 # Q68. Rank organizations based on their total number of security incidents using a window function.
+select org_id, count(incident_id) as total_incidents, row_number() over(order by count(incident_id) desc) as ranking
+from security_incidents group by org_id;
+
 # Q69. Rank incident types based on their total number of incidents using a window function.
+select incident_type, count(*) as incident_number, row_number() over(order by count(*) desc) as ranking
+from security_incidents group by incident_type;
+
 # Q70. Find the percentage contribution of each organization's security incidents to the total security incidents using a window function.
+select org_id, 
+count(incident_id) as total_count, count(incident_id) /
+sum(count(incident_id)) over() *100 as percentage from security_incidents group by org_id;
 
 # Q71. Find the organization with the highest number of Critical incidents and display its industry.
+select o.org_id, o.industry, count(s.severity) as severity_count from organizations o join
+security_incidents s using(org_id) where s.severity = 'Critical' group by o.org_id, o.industry order by severity_count desc limit 1;
+
+
 # Q72. Find the most common security incident type in the database.
+select incident_type, count(*) as incident_count from security_incidents group by incident_type order by incident_count desc limit 1;
+
 # Q73. Find the operating system type associated with the highest number of systems.
+select*from login_logs;
+select os_type, count(*) as No_system from systems group by os_type order by No_system desc limit 1;
+
 # Q74. Find the organization with the highest number of network events and display its industry.
+select o.org_id, count(n.event_id) as network_events, o.industry from network_events n join systems s using(system_id)
+join organizations o using (org_id) group by o.org_id, o.industry order by network_events desc limit 1;
+
 # Q75. Find the organization with the highest number of failed login attempts and display its industry.
+select o.org_id, count(n.login_id) as login_attempts, o.industry from login_logs n join users s using(user_id)
+join organizations o using (org_id) where status = "Failed" group by o.org_id, o.industry order by login_attempts desc limit 1;
