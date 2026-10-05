@@ -6,6 +6,10 @@ This is a beginner-level SQL project based on cybersecurity data.
 
 The project uses **MySQL** to analyze security incidents, login activity, network events, systems, users, and organizations. The main purpose is to find useful patterns in the data and identify areas that may need further investigation.
 
+## Database ER Diagram
+
+![Database ER Diagram](06ERDiagram/EEr%20Diagram.jpeg)
+
 ## Objectives
 
 The main objectives of this project are:
