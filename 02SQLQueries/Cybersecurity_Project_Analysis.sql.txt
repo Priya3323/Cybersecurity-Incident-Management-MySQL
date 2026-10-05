@@ -18,8 +18,12 @@
 # Q1 How many records are present in the users table?
 select count(*) from users;
 
+ans:1500 Users
+
 # Q2 How many records are present in the security_incidents table?
 select count(*) from security_incidents;
+
+ans: 500
 
 # Q3 Display all columns and the first 10 records from the security_incidents table.
 select*from security_incidents limit 10;
@@ -42,6 +46,14 @@ select 'incident_systems' as table_name, count(*) as total_records from incident
 union all
 select 'systems' as table_name, count(*) as total_records from systems;
 
+Ans: organizations - 120
+users - 1500
+security_incidents - 500
+network_events - 5000
+login_logs - 6000
+incident_systems - 500
+systems - 600
+
 
 -- =====================================================
 -- SECTION 2: DATA QUALITY CHECKS
@@ -52,15 +64,27 @@ select*from users;
 select*from organizations;
 select org_id, count(user_id) as total_users from users group by org_id;
 
+ans: org_id = 18 and 54 has highest number of users i.e. 22
+
 #Q7.Find the number of security incidents for each organization.
 select org_id, count(incident_id) as total_security_incidents from security_incidents group by org_id;
+
+ans: org 79, 82 & 110 has more number of security incidents
 
 #Q8.Find the number of security incidents for each severity level.
 select severity, count(incident_id) as total_incidents from security_incidents group by severity;
 
+ans: Medium - 111
+Critical - 140
+Low - 129
+High - 120
+
 #Q9. Find the number of security incidents discovered in each year.
 select year(discovered_date) as Year_Number, count(incident_id) as total_incidents from security_incidents
 group by Year_Number;
+
+ans: 2024 - 126
+2023 - 374
 
 #Q10. Find the top 5 organizations with the highest number of security incidents.
 select org_id, count(incident_id) as total_incidents from security_incidents group by org_id order by total_incidents desc limit 5;

@@ -292,10 +292,10 @@ select*from organizations;
 select*from security_incidents;
 select*from network_events;
 
-select org_id, count(user_id) as total_users from users group by org_id;
+select org_id, count(user_id) as total_users from users group by org_id order by total_users desc;
 
 #Q7.Find the number of security incidents for each organization.
-select org_id, count(incident_id) as total_security_incidents from security_incidents group by org_id;
+select org_id, count(incident_id) as total_security_incidents from security_incidents group by org_id order by total_security_incidents desc;
 
 #Q8.Find the number of security incidents for each severity level.
 select severity, count(incident_id) as total_incidents from security_incidents group by severity;
